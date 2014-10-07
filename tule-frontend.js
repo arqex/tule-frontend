@@ -1,12 +1,15 @@
 'use strict';
 
-var config = require('config');
+var config = require('config'),
+	frontend = require('./frontend')
+;
 
 module.exports = {
 	init: function(hooks){
-
+		var DIR = '/tule-frontend/';
 		config.frontend = {
-			path: config.path.plugins + '/tule-frontend/',
+			path: config.path.plugins + DIR,
+			themesPath: config.path.plugins + DIR + 'themes/',
 			rUrl: config.tule.baseUrl + 'r/frontend/'
 		};
 
@@ -14,15 +17,15 @@ module.exports = {
 			routes.push({url: 'frontend', path: 'tule-frontend/r'});
 			return routes;
 		});
-		/*
+
+
 		hooks.addFilter('settings:get:routes:server', function(routes){
 			//The splice is necessary to add the route before the default one.
 			routes.splice(-1, 0,
-				{route: 'post::/frontend/parseUrl', controller: '/frontend/controllers/feederController::parseUrl'}
+				{route: 'get::/frontend/getThemes', controller: '/frontend/actions/frontendActions::getThemes'}
 			);
 			return routes;
 		});
-		*/
 
 		hooks.addFilter('settings:get:routes:client', function(routes){
 			//The splice is necessary to add the route before the default one.
@@ -34,13 +37,13 @@ module.exports = {
 
 		hooks.addFilter('settings:get:navigation:items', function(items){
 			items.frontend = [
-				{text: 'Front End Settings', url: '/frontend'}
+				{text: 'Front End Settings', url: 'frontend'}
 			];
 			return items;
 		});
 
 		//Add the frontend controller
-		var frontendController = require( config.frontend.path + 'controllers/frontendController' );
+		var frontendController = require( config.frontend.path + 'actions/frontendActions' );
 		hooks.addFilter( 'controller:main', function(){
 			return frontendController.entry;
 		});
@@ -50,6 +53,7 @@ module.exports = {
 				options
 			;
 
+			frontend.init();
 			frontendController.init( settings );
 
 			hooks.addFilter( 'settings:get:baseUrl', function( baseUrl ){

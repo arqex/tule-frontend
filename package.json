@@ -1,5 +1,5 @@
 {
-  "name": "Tule Frontend",
+  "name": "tule-frontend",
   "description": "Allows to use tule as a backend app for a website, and offers tools to create the front-end.",
   "version": "0.0.1",
   "main": "tule-frontend.js",
