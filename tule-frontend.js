@@ -22,7 +22,7 @@ module.exports = {
 		hooks.addFilter('settings:get:routes:server', function(routes){
 			//The splice is necessary to add the route before the default one.
 			routes.splice(-1, 0,
-				{route: 'get::/frontend/getThemes', controller: '/frontend/actions/frontendActions::getThemes'}
+				{route: 'get::/frontend/getThemes', controller: '/tule-frontend/actions/frontendActions::getThemes'}
 			);
 			return routes;
 		});
@@ -63,7 +63,12 @@ module.exports = {
 				return settings.get( 'frontend' )
 					.then( function( frontendOptions ){
 						options = frontendOptions;
-						return options.tuleUrl || baseUrl;
+						var url = options.tuleUrl || baseUrl;
+
+						// Remove trailing slash
+						if(url[url.length -1] == '/')
+							url = url.slice(0, url.length -1);
+						return url;
 					})
 				;
 			});
@@ -75,7 +80,12 @@ module.exports = {
 				return settings.get( 'frontend' )
 					.then( function( frontendOptions ){
 						options = frontendOptions;
-						return options.assetsUrl || assetsUrl;
+						var url = options.assetsUrl || assetsUrl;
+
+						// Remove trailing slash
+						if(url[url.length -1] == '/')
+							url = url.slice(0, url.length -1);
+						return url;
 					})
 				;
 			});
