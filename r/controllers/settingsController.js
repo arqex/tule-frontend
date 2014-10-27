@@ -26,22 +26,59 @@ define(deps, function($,_,Backbone, Services, BaseView, PageController, Alerts, 
 		defaultOptions: {
 			tuleUrl: '/',
 			frontendUrl: '/website/',
-			assetsUrl: '/r'
+			assetsUrl: '/r',
+			theme: 'bcn'
 		},
 
-		initialize: function() {
+		initialize: function( options ) {
+			console.log( options );
+			this.getSettings();
+			this.loading = this.loadThemes();
 		},
 
 		render: function() {
 			var me = this;
 
+			if(!me.themes) {
+				me.loading.then( function(){
+					me.render();
+				});
+				return this;
+			}
+
 			this.getSettings()
 				.then(function( options ){
+					var themeSelector = [
+						{value: '', label: '---Pick a theme'}
+					];
+
+					_.each( me.themes, function( themeName ){
+						themeSelector.push({value: themeName, label: themeName});
+					});
+
+					options.themes = themeSelector;
+
 					me.$el.html( me.tpl(options) );
 				})
 			;
 
 			return this;
+		},
+
+		loadThemes: function() {
+			var me = this;
+
+			return this.settings.get( 'apiUrl' )
+				.then( function( apiUrl ){
+					var themesUrl = apiUrl.value + '/frontend/getThemes';
+
+					return $.get(themesUrl)
+						.then( function( response ){
+							me.themes = response.themes;
+						})
+					;
+				})
+			;
 		},
 
 		getSettings: function() {

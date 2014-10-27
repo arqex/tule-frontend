@@ -19,7 +19,7 @@
 			<label>Current theme:</label>
 			<select name="theme" class="js-themes">
 				<% _.each( themes, function ( option ) { %>
-				<option value="<%= option.value %>"><%= option.label %></option>
+				<option value="<%= option.value %>" <%= theme == option.value ? 'selected="selected"' : '' %>><%= option.label %></option>
 				<% }); %>
 			</select>
 		</div>

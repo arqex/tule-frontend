@@ -53,7 +53,7 @@ module.exports = {
 				options
 			;
 
-			frontend.init();
+			frontend.init( hooks );
 			frontendController.init( settings );
 
 			hooks.addFilter( 'settings:get:baseUrl', function( baseUrl ){
