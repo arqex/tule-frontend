@@ -1,17 +1,24 @@
 'use strict';
 
 var config = require('config'),
-	frontend = require('./frontend')
+	frontend = require('./frontend'),
+	logger = require('winston')
 ;
 
 module.exports = {
 	init: function(hooks){
 		var DIR = '/tule-frontend/';
-		config.frontend = {
-			path: config.path.plugins + DIR,
-			themesPath: config.path.plugins + DIR + 'themes/',
-			rUrl: config.tule.baseUrl + 'r/frontend/'
-		};
+
+		//load config file
+		config.load('frontend');
+
+		if( !config.frontend ) {
+			config.frontend = {
+				path: config.path.plugins + DIR,
+				themesPath: config.path.app + '/themes/',
+				rUrl: config.tule.baseUrl + 'r/frontend/'
+			};
+		}
 
 		hooks.addFilter('settings:get:routes:static', function(routes){
 			routes.push({url: 'frontend', path: 'tule-frontend/r'});
