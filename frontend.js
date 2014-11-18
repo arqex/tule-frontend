@@ -59,6 +59,10 @@ FrontendApp.prototype = {
 
 		return settings.get('frontend')
 			.then( function( feOptions ){
+
+				if(  !feOptions )
+					return me.setDefaultTheme();
+
 				var theme = DefaultTheme,
 					themeName = feOptions.theme
 				;
@@ -82,14 +86,24 @@ FrontendApp.prototype = {
 				}
 				catch( e ) {
 					logger.error( e.stack );
+					me.setDefaultTheme();
 				}
 
 				return theme;
 			})
 			.catch( function( err ){
 				logger.error( err.stack );
+				me.setDefaultTheme();
 			})
 		;
+	},
+
+	setDefaultTheme: function(){
+		var theme = require( Path.join( __dirname, 'defaultTheme/index' ) );
+
+		this.theme.name = 'bcn';
+		this.theme.controller = theme;
+		this.theme.staticPath = '';
 	}
 
 };
