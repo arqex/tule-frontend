@@ -2,7 +2,8 @@
 
 var config = require('config'),
 	frontend = require('./frontend'),
-	logger = require('winston')
+	logger = require('winston'),
+	express = require('express')
 ;
 
 module.exports = {
@@ -99,11 +100,16 @@ module.exports = {
 
 		});
 
-		/*
-		hooks.addFilter('settings:get:frontend:observers', function( observers ){
-			observers.push('../frontend/frontendObserver');
-			return observers;
-		});
-		*/
+		// Enable gzip
+		try {
+			hooks.addFilter( 'middleware', -20, function( handlers ){
+				handlers.unshift( {name: 'gzip', handler: express.compress()} );
+				console.log( handlers );
+				return handlers;
+			});
+		}
+		catch( e ){
+			console.log( e.stack );
+		}
 	}
 };
