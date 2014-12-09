@@ -6,6 +6,8 @@ var config = require('config'),
 	express = require('express')
 ;
 
+var settings, db;
+
 module.exports = {
 	init: function(hooks){
 		var DIR = '/tule-frontend/';
@@ -17,7 +19,8 @@ module.exports = {
 			config.frontend = {
 				path: config.path.plugins + DIR,
 				themesPath: config.path.app + '/themes/',
-				rUrl: config.tule.baseUrl + 'r/frontend/'
+				rUrl: config.tule.baseUrl + 'r/frontend/',
+				pageCollection: 'pages'
 			};
 		}
 
@@ -57,9 +60,11 @@ module.exports = {
 		});
 
 		hooks.on( 'settings:ready', function(){
-			var settings = require(config.path.modules + '/settings/settingsManager'),
-				options
-			;
+			var options;
+
+			// Initialize db variables
+			settings = config.require( 'settings' );
+			db = config.require( 'qdb' );
 
 			frontend.init( hooks );
 			frontendController.init( settings );
@@ -98,18 +103,78 @@ module.exports = {
 				;
 			});
 
+			// Check pages are installed
+			checkPageCollection();
+
 		});
 
 		// Enable gzip
 		try {
 			hooks.addFilter( 'middleware', -20, function( handlers ){
 				handlers.unshift( {name: 'gzip', handler: express.compress()} );
-				console.log( handlers );
 				return handlers;
 			});
 		}
 		catch( e ){
-			console.log( e.stack );
+			logger.error( e.stack );
 		}
 	}
+};
+
+
+var checkPageCollection = function() {
+	var collectionName = 'collection_' + config.frontend.pageCollection;
+
+
+	settings.get( collectionName )
+		.then( function( collectionSetting ){
+			if( collectionSetting ) {
+
+				// Collection exists, all ok
+				return;
+			}
+
+			// Page collection creation
+			var settingsDb = config.require( 'db' ).getInstance('settings');
+
+			settingsDb.collection( config.tule.settingsCollection ).save(
+				{
+					name: collectionName,
+					collectionName: config.frontend.pageCollection,
+					propertyDefinitions:[
+						{key: 'title', label: 'Title', datatype: {id: 'string'}},
+						{key: 'slug', label: 'Slug', datatype: {id: 'string'}},
+						{key: 'content', label: 'Content', datatype: {id: 'html'}},
+						{key: 'mood', label: 'Mood', datatype: {id: 'select', options: {
+							selectOptions: [
+								{ value: 'happy', label: 'Happy' },
+								{ value: 'smile', label: 'Smile' },
+								{ value: 'surprise', label: 'Surprise' },
+								{ value: 'doubt', label: 'Doubt' },
+								{ value: 'suspicious', label: 'Suspicious' },
+								{ value: 'mad', label: 'Mad' }
+							]
+						}}},
+						{key: 'published', label: 'Published', datatype: {id: 'bool'}}
+					],
+					headerFields: [ 'title' ],
+					mandatoryProperties: [ 'title', 'slug', 'content', 'mood', 'published' ],
+					customProperties: false
+				},
+				function( err ){
+					if( err )
+						logger.error( new Error('Could not create the page collection settings.') );
+					else
+						logger.debug( 'Page collection settings created.' );
+				}
+			);
+		})
+	;
+
+	// Creates users collection if it doesn't exist
+	db().createCollection( config.frontend.pageCollection )
+		.then( function(){
+			logger.debug( 'Page collection created' );
+		})
+	;
 };
