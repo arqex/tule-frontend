@@ -32,7 +32,7 @@ module.exports = {
 					if( url.length > 1 && url.slice( -1 ) == '/')
 						url = url.slice(0, url.length - 1);
 
-					if( req.url.slice( 0, url.length) == url )
+					if( req.url.slice( 0, url.length) == url && (!req.url[url.length] || req.url[url.length] == '/') )
 						isTuleUrl = true;
 				});
 
